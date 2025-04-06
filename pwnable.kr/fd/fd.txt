@@ -1,0 +1,9 @@
+fd@ubuntu:~$ ./fd 4660
+LETMEWIN
+good job :)
+Mama! Now_I_understand_what_file_descriptors_are!
+fd@ubuntu:~$
+
+
+since we what the file descriptor to be 0, so read() will read the input from us, we enter 4660 (which is 0x1234 in decimal) 
+and then enter the string LETMEWIN.

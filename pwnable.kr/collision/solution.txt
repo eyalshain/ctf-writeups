@@ -1,0 +1,31 @@
+so I'm gonna show 2 ways to do it - pwntools, and with 'python -c'/command line arguments
+
+from the c code, we need to enter a password that's 20 characters long. the program checks our password, and uses an integer pointer, which mean that the 
+variable now points to 4 characters at a time (4 bytes), so we need 5 integers that's 4 bytes long, that when we will add them together we will get:
+0x21DD09EC
+
+so I divided that number by 5 and got: 113626824.8, then I ignored the reminder and took the main part (0x6c5cec8 in hex)
+now we can use that number 4 times, plus another number to sum to the target 0x21dd09ec
+so we will do
+0x21DD09EC - 4 * 0x6c5cec8 = 0x6c5cecc
+so
+4 * 0x6c5cec8 + 0x6c5cecc = target(0x21DD09EC) 
+
+script:
+
+>>> from pwn import *
+>>> payload = p32(0x06C5CEC8) * 4 + p32(0x06C5CECC)
+
+>>> p = process(['./col', payload])
+>>> p.interactive()
+
+flag: Two_hash_collision_Nicely
+
+
+
+
+another way to do it with command line:
+
+./col $(python3 -c 'import sys; sys.stdout.buffer.write(b"\xc8\xce\xc5\x06"*4 + b"\xcc\xce\xc5\x06")')
+
+
