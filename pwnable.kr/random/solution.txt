@@ -1,0 +1,40 @@
+random - pwnable.kr writeup
+
+
+as we see in the c code, the program use rand() to generate a pseudorandom number, but since the program didn't use srand(), it uses the same seed value over and over again, so no matter how many times we run the program - the variable random
+will always have the same value. with that being said, we can just create a file on pwnable.kr's machine to print rand()!!
+now because we don't have permission, we will create a c file on the /tmp directory, where we do have permission...
+
+vim /tmp/file.c
+
+#include <stdio.h>
+
+int main() {
+
+        unsigned int bro = rand();
+        printf("number = %d\n", bro);
+
+        return 0;
+}
+
+
+gcc -o run file.c
+./run
+
+output:
+number = 1804289383
+
+now we can xor that number with the target (0xcafebabe) and get:
+2708864985
+
+let's run:
+
+random@ubuntu:~$ ./random
+2708864985
+Good!
+m0mmy_I_can_predict_rand0m_v4lue!
+random@ubuntu:~$
+
+
+
+and we got the flag!!! adiosss!
