@@ -1,0 +1,9 @@
+blackjack - pwnable.kr solution
+
+
+flag: Woohoo_I_am_now_a_MILL10NAIRE!
+
+a simeple way to do it is by loosing (which is not hard), cause when u lose the program does:
+
+cash = cash - bet, so what happen if bet is negative? what is --? +! so we can enter a negative value like
+-1000000, which then our cash will raised and we get the flag.
