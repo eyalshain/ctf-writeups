@@ -1,0 +1,55 @@
+pwnable.kr - leg
+
+from the c code we see that we need to enter a value = equal to key1() + key2() + key3(). to see the return values of those function we can
+look at the assembly code and see the value being stored in r0.
+
+in key1:
+   0x00008cdc <+8>:     mov     r3, pc
+   0x00008ce0 <+12>:    mov     r0, r3
+
+
+in these 2 lines, the program takes the program counter and puts it in r3 then in r0. while executing pc is holding the current address + an
+offset - 8 bytes. so the return address will be:
+0x00008cdc + 8 = 0x00008CE4
+
+in key3:
+	0x00008d28 <+8>:     mov     r3, lr
+   	0x00008d2c <+12>:    mov     r0, r3
+
+
+lr is holding the return address - the address that the program is supposed to jump to after executing the current function. key3 got called 
+from main:
+   0x00008d7c <+64>:    bl      0x8d20 <key3>
+   0x00008d80 <+68>:    mov     r3, r0
+
+in main+64 it calles key3, so the return address is the next instruction - at address: 0x00008d80
+
+
+in key2 - there is this line:
+   0x00008d10 <+32>:    mov     r0, r3
+but what's in r3? let's look before:
+
+   0x00008d04 <+20>:    mov     r3, pc
+   0x00008d06 <+22>:    adds    r3, #4
+
+the program moves to r3 the program counter - current address + 8: 0x00008d04 + 4 = 0x00008D08
+in the next instruction we add 4 to that, so: 0x00008D0c
+let's use python to add everything:
+
+>>> 0x00008CE4 + 0x00008D0c + 0x00008d80
+108400
+
+*by the way, the reason that in key2 we add just 4 to the current address is because we switch to thumb mode earlier in the function...
+
+let's run the program and get the flag:
+
+/ $ ./leg
+Daddy has very strong arm! : 108400
+Congratz!
+daddy_has_lot_of_ARM_muscl3
+
+flag: daddy_has_lot_of_ARM_muscl3
+
+
+have a good day :)
+
