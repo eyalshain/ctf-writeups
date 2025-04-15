@@ -1,0 +1,20 @@
+pwnable.kr - mistake
+
+the vulneraility is in the first condition:
+if(fd=open("/home/mistake/password",O_RDONLY,0400) < 0)
+
+because it doesn't have parentheses, what it basically doing is assigning fd to open(..) < 0
+and because the file is opened successfully, that condition is false, so fd = 0. with that being said, both read() happen from stdin.
+now about xor() function, it goes through the s and to each character perform a bitwise xor operation. so our goal is this:
+provide a certain input, and then another one but to each character of the first one we need to perform xor. so let's take:
+1111111111, ord('1') = 49 ===> 49 ^ 1 = 48. chr(48) = '0'
+
+so, the first input can be:
+1111111111
+and the second:
+0000000000
+
+run the program with those inputs and get the flag:
+
+
+flag: Mommy_the_0perator_priority_confuses_me
