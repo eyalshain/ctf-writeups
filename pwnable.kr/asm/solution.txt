@@ -1,0 +1,48 @@
+asm - pwnable.kr
+
+c code
+'''
+char stub[] = "\x48\x31\xc0\x48\x31\xdb\x48\x31\xc9\x48\x31\xd2\x48\x31\xf6\x48\x31\xff\x48\x31\xed\x4d\x31\xc0\x4d\x31\xc9\x4d\x31\xd2\x4d\x31\xdb\x4d\x31\xe4\x4d\x31\xed\x4d\x31\xf6\x4d\x31\xff";
+unsigned char filter[256];
+int main(int argc, char* argv[]){
+
+        setvbuf(stdout, 0, _IONBF, 0);
+        setvbuf(stdin, 0, _IOLBF, 0);
+
+        printf("Welcome to shellcoding practice challenge.\n");
+        printf("In this challenge, you can run your x64 shellcode under SECCOMP sandbox.\n");
+        printf("Try to make shellcode that spits flag using open()/read()/write() systemcalls only.\n");
+        printf("If this does not challenge you. you should play 'asg' challenge :)\n");
+
+        char* sh = (char*)mmap(0x41414000, 0x1000, 7, MAP_ANONYMOUS | MAP_FIXED | MAP_PRIVATE, 0, 0);
+        memset(sh, 0x90, 0x1000);
+        memcpy(sh, stub, strlen(stub));
+
+        int offset = sizeof(stub);
+        printf("give me your x64 shellcode: ");
+        read(0, sh+offset, 1000);
+
+        alarm(10);
+        chroot("/home/asm_pwn");        // you are in chroot jail. so you can't use symlink in /tmp
+        sandbox();
+        ((void (*)(void))sh)();
+        return 0;
+'''
+
+
+the program use nmap to to map 0x1000 bytes of memory with - read | write | execute permission, that mean that we can execute 
+shellcode on the stack. in the shellcode.asm u can see my shellcode, it's using open() syscall to open that file, then read() to 
+read its content and then write to write the content to stdout. now generally when we write shellcodes it can be placed anywhere in 
+memory, here it's a little different, but we'll still relate to it like that... so the way we pass the filename to rdi is:
+in the label: get_fileName we call open_file, that will push the return address on the stack, aka the address of the next instruction,which is our filename! cool right? so now to get the file name in open_file we can just do pop rdi and continue with the shellcode.
+
+after we write it, we assembly it and see the bytes as follows:
+
+nasm -f elf64 file.asm -o file.o
+objcopy -O binary --only-section=.text file.o shellcode.bin
+xxd shellcode.bin
+xxd -p shellcode.bin | sed 's/\(..\)/\\x\1/g' | tr -d '\n' 
+
+placed it into our pwntools - python script, run it and get the flag:
+
+flag: Mak1ng_5helLcodE_i5_veRy_eaSy
